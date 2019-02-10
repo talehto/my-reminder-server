@@ -4,9 +4,12 @@ const routes = require('./routes/')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const passport = require('passport');
 const helmet = require('helmet')
 
 const app = express()
+app.use(passport.initialize());
+require('./passport')(passport);
 const router = express.Router()
 //const url = process.env.MONGODB_URI || "mongodb://localhost:27017/medium"
 const url = process.env.MONGODB_URI || "mongodb://localhost:27017/myreminderapp"
