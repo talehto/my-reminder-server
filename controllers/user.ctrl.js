@@ -8,44 +8,55 @@ const validateLoginInput = require('../validation/login');
 
 module.exports = {
     register: (req, res) => {
+        console.log('Executing register method. Email: ' + req.body.email)
         const { errors, isValid } = validateRegisterInput(req.body);
         if(!isValid) {
+            console.log('NOT VALID REQUEST. Body: ' + req.body)
             return res.status(400).json(errors);
         }
-        //User.findOne({
-        //    email: req.body.email
-        //}).then(user => {
-        //if(user) {
-        //    return res.status(400).json({
-        //        email: 'Email already exists'
-        //    });
-        //}
-        const avatar = gravatar.url(req.body.email, {
-            s: '200',
-            r: 'pg',
-            d: 'mm'
-        });
-        const newUser = new User({
-            name: req.body.name,
-            email: req.body.email,
-            password: req.body.password,
-            avatar
-        });
-        bcrypt.genSalt(10, (err, salt) => {
-            if(err) console.error('There was an error', err);
-            else {
-                bcrypt.hash(newUser.password, salt, (err, hash) => {
-                    if(err) console.error('There was an error', err);
-                    else {
-                        newUser.password = hash;
-                        newUser
-                            .save()
-                            .then(user => {
-                                res.json(user)
-                            }); 
-                    }
-                });
-            }
+        console.log('Executing register method. Validation succeed.')
+        var queryPromise = User.findOne({email: req.body.email}).exec();
+        queryPromise.then(user => {
+        if(user) {
+            console.log("Email already exists")
+            //return res.status(400).json({
+            //    email: 'Email already exists'
+            //});
+            return res.status(400).send("Email already exists");
+        }else{
+            console.log("Creating an avatar")
+            const avatar = gravatar.url(req.body.email, {
+                s: '200',
+                r: 'pg',
+                d: 'mm'
+            });
+            const newUser = new User({
+                name: req.body.name,
+                email: req.body.email,
+                password: req.body.password,
+                //avatar
+            });
+            bcrypt.genSalt(10, (err, salt) => {
+                if(err) console.error('There was an error', err);
+                else {
+                    bcrypt.hash(newUser.password, salt, (err, hash) => {
+                        if(err) console.error('There was an error', err);
+                        else {
+                            newUser.password = hash;
+                            newUser
+                                .save()
+                                .then(user => {
+                                    console.log('User saved successfully. User: ' + user.name)
+                                    res.json(user)
+                                }) 
+                                .catch(err => {
+                                    res.status(400).send("unable to save to database");
+                                });
+                        }
+                    });
+                }
+            });
+        }
         });
     }, 
     login: (req, res) => {

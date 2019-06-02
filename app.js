@@ -20,7 +20,7 @@ try {
         //useMongoClient: true
     })    
 } catch (error) {
-    
+    console.log('Can not connect to the database'+ error)
 }
 
 let port = 5000 || process.env.PORT
